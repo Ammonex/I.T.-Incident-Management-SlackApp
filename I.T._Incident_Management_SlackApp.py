@@ -1,139 +1,30 @@
-﻿import os
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+import os
+from dotenv import load_dotenv
 
-# Initializes your app with your bot token and socket mode handler
-app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+load_dotenv()
+SLACK_BOT_TOKEN = os.environ["SLACK_BOT_TOKEN"]
+SLACK_APP_TOKEN = os.environ["SLACK_APP_TOKEN"]
 
-# Start your app
-it_incident_management:(app, os.environ["SLACK_APP_TOKEN"]).start( )
-SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+app = App(token=os.environ["SLACK_BOT_TOKEN"])
 
-# The open_modal shortcut listens to a shortcut with the callback_id "open_modal"
+# Listen for an app mention
+@app.event("app_mention")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+def mention_handler(body, say):
+        say("Hello! If you'd like to create an incident, please use the /incident shortcut")
+
+# Listen for a shortcut invocation
 @app.shortcut("create_new_incident")
-def open_modal(ack, shortcut, client):
-    # Acknowledge the shortcut request
+def open_modal(ack, body, client):
+    # Acknowledge the command request
     ack()
-    # Call the views_open method using the built-in WebClient
+    # Call views_open with the built-in client
     client.views_open(
-        trigger_id=shortcut["create_new_incident"],
-        # A simple view payload for a modal
+        # Pass a valid trigger_id within 3 seconds of receiving it
+        trigger_id=body["trigger_id"],
+        # View payload
         view={
-            "type": "modal",
-            "title": {
-		"type": "plain_text",
-		"text": "Create new I.T. Incident"
-	},
-	"submit": {
-		"type": "plain_text",
-		"text": "Submit"
-	},
-	"blocks": [
-		{
-			"type": "input",
-			"element": {
-				"type": "plain_text_input",
-				"action_id": "sl_input",
-				"placeholder": {
-					"type": "plain_text",
-					"text": "Placeholder text for single-line input"
-				}
-			},
-			"label": {
-				"type": "plain_text",
-				"text": "Title of the issue:"
-			},
-			"hint": {
-				"type": "plain_text",
-				"text": "Please be succinct. Example: WiFi Issues at X building, Production app down"
-			}
-		},
-		{
-			"type": "input",
-			"element": {
-				"type": "plain_text_input",
-				"multiline": true,
-				"action_id": "plain_text_input-action"
-			},
-			"label": {
-				"type": "plain_text",
-				"text": "Description of issue:",
-				"emoji": true
-			}
-		},
-		}
-			"type": "input",
-			"element": {
-				"type": "static_select",
-				"placeholder": {
-					"type": "plain_text",
-					"text": "Select an item",
-					"emoji": true
-				       },
-				"options": [
-					{
-						"text": {
-							"type": "plain_text",
-							"text": "P0: This is full outage. Production systems are fully down*",
-							"emoji": true
-						},
-						"value": "value-0"
-					},
-					{
-						"text": {
-							"type": "plain_text",
-							"text": "P1: This is a critical issue, but not a fully down system.",
-							"emoji": true
-						},
-						"value": "value-1"
-					},
-					{
-						"text": {
-							"type": "plain_text",
-							"text": "P2: This is a normal severity issue. We'll get a ticket filed.",
-							"emoji": true
-						},
-						"value": "value-2"
-					}
-				],
-				"action_id": "static_select-action"
-			},
-			"label":{
-				"type": "plain_text",
-				"text": "Priority of issue:",
-				"emoji": true
-                        }
-                    ]
-                }
-    ]
-    }
-)
-
-# The echo command simply echoes on command
-@app.command("/incident")
-def repeat_text(ack, respond, command):
-    # Acknowledge command request
-    ack()
-    respond(f"{command['text']}")
-    # Acknowledge action request
-    ack()
-    say("Incident created 👍")
-
-# The open_modal shortcut listens to a shortcut with the callback_id "open_modal"
-@app.shortcut("open_modal")
-def open_modal(ack, shortcut, client):
-    # Acknowledge the shortcut request
-    ack()
-    # Call the views_open method using the built-in WebClient
-    client.views_open(
-        trigger_id=shortcut["trigger_id"],
-        # A simple view payload for a modal
-        view={
-            "type": "modal",
-            "title": {"type": "plain_text", "text": "My App"},
-            "close": {"type": "plain_text", "text": "Close"},
-            "blocks": [
-              {
 	"title": {
 		"type": "plain_text",
 		"text": "Create new I.T. Incident"
@@ -219,18 +110,11 @@ def open_modal(ack, shortcut, client):
 			}
 		}
 	],
-	"type": "modal"
+			"type": "modal"
 }
-                },
-                {
-                    "type": "context",
-                    "elements": [
-                        {
-                            "type": "mrkdwn",
-                            "text": "Psssst this modal was designed using <https://api.slack.com/tools/block-kit-builder|*Block Kit Builder*>"
-                        }
-                    ]
-                }
-            ]
-        }
-    )
+		)
+    		 }
+)
+
+if __name__ == "__main__":
+    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
